@@ -1686,7 +1686,7 @@ class FabrikAdminModelList extends FabModelAdmin
 	 * @return  void
 	 */
 
-	protected function updatePrimaryKey($fieldName, $autoIncrement, $type = 'int(11)')
+	protected function updatePrimaryKey($fieldName, $autoIncrement, $type = 'int(10) unsigned')
 	{
 		$feModel = $this->getFEModel();
 		$app = JFactory::getApplication();
@@ -1745,17 +1745,17 @@ class FabrikAdminModelList extends FabModelAdmin
 	 *
 	 * @param   string  $fieldName      primary key column name
 	 * @param   bool    $autoIncrement  is the column auto incrementing
-	 * @param   string  $type           the primary keys column type (if autoincrement true then int(6) is always used as the type)
+	 * @param   string  $type           the primary keys column type (if autoincrement true then int(10) unsigned is always used as the type)
 	 *
 	 * @return  mixed  false / JError
 	 */
 
-	private function addKey($fieldName, $autoIncrement, $type = "INT(6)")
+	private function addKey($fieldName, $autoIncrement, $type = "INT(10) unsigned")
 	{
 		$db = $this->getFEModel()->getDb();
 		$app = JFactory::getApplication();
 		$input = $app->input;
-		$type = $autoIncrement != true ? $type : 'INT(6)';
+		$type = $autoIncrement != true ? $type : 'INT(10) UNSIGNED';
 		$jform = $input->get('jform', array(), 'array');
 		$tableName = ($jform['db_table_name'] != '') ? $jform['db_table_name'] : $jform['_database_name'];
 		$tableName = preg_replace('#[^0-9a-zA-Z_]#', '_', $tableName);
@@ -1842,7 +1842,7 @@ class FabrikAdminModelList extends FabModelAdmin
 	 * @return  void
 	 */
 
-	protected function updateKey($fieldName, $autoIncrement, $type = "INT(11)")
+	protected function updateKey($fieldName, $autoIncrement, $type = "INT(10) UNSIGNED")
 	{
 		$app = JFactory::getApplication();
 		$input = $app->input;
