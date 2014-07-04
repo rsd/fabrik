@@ -48,6 +48,7 @@
 			type="list">
 				<option value="1">JYES</option>
 				<option value="addonly">COM_FABRIK_ALTER_EXISTING_FIELD_ADD_NEW_FIELDS_ONLY</option>
+				<option value="suggestonly">COM_FABRIK_ALTER_EXISTING_FIELD_SUGGEST_ONLY</option>
 				<option value="0">JNO</option>
 		</field>
 
