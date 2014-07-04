@@ -877,8 +877,17 @@ class FabrikAdminModelList extends FabModelAdmin
 		{
 			$db = $feModel->getDb();
 			$item = $feModel->getTable();
-			$db->setQuery('ALTER TABLE ' . $item->db_table_name . ' COLLATE  ' . $newCollation);
-			$db->execute();
+			$sql = 'ALTER TABLE ' . $item->db_table_name . ' COLLATE  ' . $newCollation;
+			if($feModel->suggestOnly())
+			{
+				// FIXME: Better dialog
+				JError::raiseNotice( 100, "Fabrik suggest this change (collation): $sql" );
+			}
+			else
+			{
+				$db->setQuery($sql);
+				$db->execute();
+			}
 		}
 
 		return true;
@@ -1692,7 +1701,7 @@ class FabrikAdminModelList extends FabModelAdmin
 		$app = JFactory::getApplication();
 		$input = $app->input;
 
-		if (!$feModel->canAlterFields())
+		if (!$feModel->canAlterFields() || !$feModel->suggestOnly())
 		{
 			return;
 		}
@@ -1752,7 +1761,8 @@ class FabrikAdminModelList extends FabModelAdmin
 
 	private function addKey($fieldName, $autoIncrement, $type = "INT(10) unsigned")
 	{
-		$db = $this->getFEModel()->getDb();
+		$feModel = $this->getFEModel();
+		$db = $feModel->getDb();
 		$app = JFactory::getApplication();
 		$input = $app->input;
 		$type = $autoIncrement != true ? $type : 'INT(10) UNSIGNED';
@@ -1768,22 +1778,37 @@ class FabrikAdminModelList extends FabModelAdmin
 		}
 
 		$fieldName = $db->quoteName($fieldName);
-		$sql = 'ALTER TABLE ' . $tableName . ' ADD PRIMARY KEY (' . $fieldName . ')';
 
 		// Add a primary key
-		$db->setQuery($sql);
-
-		if (!$db->execute())
+		$sql = 'ALTER TABLE ' . $tableName . ' ADD PRIMARY KEY (' . $fieldName . ')';
+		if($feModel->suggestOnly())
 		{
-			return JError::raiseWarning(500, $db->getErrorMsg());
+			// FIXME: Better dialog
+			JError::raiseNotice( 100, "Fabrik suggest this change (add key): $sql" );
+		}
+		else
+		{
+			$db->setQuery($sql);
+			if (!$db->execute())
+			{
+				return JError::raiseWarning(500, $db->getErrorMsg());
+			}
 		}
 
 		if ($autoIncrement)
 		{
 			// Add the autoinc
 			$sql = 'ALTER TABLE ' . $tableName . ' CHANGE ' . $fieldName . ' ' . $fieldName . ' ' . $type . ' NOT NULL AUTO_INCREMENT';
-			$db->setQuery($sql);
-			$db->execute();
+			if($feModel->suggestOnly())
+			{
+				// FIXME: Better dialog
+				JError::raiseNotice( 100, "Fabrik suggest this change (add key): $sql" );
+			}
+			else
+			{
+				$db->setQuery($sql);
+				$db->execute();
+			}
 		}
 
 		return true;
@@ -1799,34 +1824,47 @@ class FabrikAdminModelList extends FabModelAdmin
 
 	private function dropKey($aPriKey)
 	{
-		$db = $this->getFEModel()->getDb();
+		$feModel = $this->getFEModel();
+		$db = $feModel->getDb();
 		$app = JFactory::getApplication();
 		$input = $app->input;
 		$jform = $input->get('jform', array(), 'array');
 		$tableName = FabrikString::safeColName($jform['db_table_name']);
+
+		// Remove the autoinc
 		$sql = 'ALTER TABLE ' . $tableName . ' CHANGE ' . FabrikString::safeColName($aPriKey['colname']) . ' '
 			. FabrikString::safeColName($aPriKey['colname']) . ' ' . $aPriKey['type'] . ' NOT NULL';
 
-		// Remove the autoinc
-		$db->setQuery($sql);
-
-		if (!$db->execute())
+		if($feModel->suggestOnly())
 		{
-			JError::raiseWarning(500, $db->getErrorMsg());
-
-			return false;
+			// FIXME: Better dialog
+			JError::raiseNotice( 100, "Fabrik suggest this change (drop key): $sql" );
+		}
+		else
+		{
+			$db->setQuery($sql);
+			if (!$db->execute())
+			{
+				JError::raiseWarning(500, $db->getErrorMsg());
+				return false;
+			}
 		}
 
-		$sql = 'ALTER TABLE ' . $tableName . ' DROP PRIMARY KEY';
-
 		// Drop the primary key
-		$db->setQuery($sql);
-
-		if (!$db->execute())
+		$sql = 'ALTER TABLE ' . $tableName . ' DROP PRIMARY KEY';
+		if($feModel->suggestOnly())
 		{
-			JError::raiseWarning(500, 'alter table: ' . $db->getErrorMsg());
-
-			return false;
+			// FIXME: Better dialog
+			JError::raiseNotice( 100, "Fabrik suggest this change (drop key): $sql" );
+		}
+		else
+		{
+			$db->setQuery($sql);
+			if (!$db->execute())
+			{
+				JError::raiseWarning(500, 'alter table: ' . $db->getErrorMsg());
+				return false;
+			}
 		}
 
 		return true;
@@ -1848,7 +1886,8 @@ class FabrikAdminModelList extends FabModelAdmin
 		$input = $app->input;
 		$jform = $input->get('jform', array(), 'array');
 		$tableName = FabrikString::safeColName($jform['db_table_name']);
-		$db = $this->getFEModel()->getDb();
+		$feModel = $this->getFEModel();
+		$db = $feModel->getDb();
 
 		if (strstr($fieldName, '.'))
 		{
@@ -1866,11 +1905,18 @@ class FabrikAdminModelList extends FabModelAdmin
 			$sql .= " AUTO_INCREMENT";
 		}
 
-		$db->setQuery($sql);
-
-		if (!$db->execute())
+		if($feModel->suggestOnly())
 		{
-			$this->setError('update key:' . $db->getErrorMsg());
+			// FIXME: Better dialog
+			JError::raiseNotice( 100, "Fabrik suggest this change (update key): $sql" );
+		}
+		else
+		{
+			$db->setQuery($sql);
+			if (!$db->execute())
+			{
+				$this->setError('update key:' . $db->getErrorMsg());
+			}
 		}
 	}
 

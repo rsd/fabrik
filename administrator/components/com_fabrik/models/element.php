@@ -1051,8 +1051,17 @@ class FabrikAdminModelElement extends FabModelAdmin
 				$listModel = $pluginModel->getListModel();
 				$db = $listModel->getDb();
 				$tableName = $db->quoteName($this->getRepeatElementTableName($pluginModel));
-				$db->setQuery('DROP TABLE ' . $tableName);
-				$db->execute();
+				$sql = 'DROP TABLE ' . $tableName;
+				if($listModel->suggestOnly())
+				{
+					// FIXME: Better dialog
+					JError::raiseNotice( 100, "Fabrik suggest this change (drop table): $sql" );
+				}
+				else
+				{
+					$db->setQuery($sql);
+					$db->execute();
+				}
 			}
 
 			$listModel = $pluginModel->getListModel();
@@ -1062,8 +1071,17 @@ class FabrikAdminModelElement extends FabModelAdmin
 			if (!empty($item->id))
 			{
 				$db = $listModel->getDb();
-				$db->setQuery('ALTER TABLE ' . $db->quoteName($item->db_table_name) . ' DROP ' . $db->quoteName($element->name));
-				$db->execute();
+				$sql = 'ALTER TABLE ' . $db->quoteName($item->db_table_name) . ' DROP ' . $db->quoteName($element->name)
+				if($listModel->suggestOnly())
+				{
+					// FIXME: Better dialog
+					JError::raiseNotice( 100, "Fabrik suggest this change (drop column): $sql" );
+				}
+				else
+				{
+					$db->setQuery($sql);
+					$db->execute();
+				}
 			}
 		}
 
@@ -1135,11 +1153,18 @@ class FabrikAdminModelElement extends FabModelAdmin
 		$db = $listModel->getDb();
 		$desc = $elementModel->getFieldDescription();
 		$name = $db->quoteName($row->name);
-		$db
-			->setQuery(
-				'CREATE TABLE IF NOT EXISTS ' . $db->quoteName($tableName) . ' ( id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, parent_id INT(11), '
-					. $name . ' ' . $desc . ', ' . $db->quoteName('params') . ' TEXT );');
-		$db->execute();
+		$sql = 'CREATE TABLE IF NOT EXISTS ' . $db->quoteName($tableName) . ' ( id INT( 10 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, parent_id INT(10) UNSIGNED, '
+				. $name . ' ' . $desc . ', ' . $db->quoteName('params') . ' TEXT );';
+		if($listModel->suggestOnly())
+		{
+			// FIXME: Better dialog
+			JError::raiseNotice( 100, "Fabrik suggest this change (create repeat element): $sql" );
+		}
+		else
+		{
+			$db->setQuery($sql);
+			$db->execute();
+		}
 
 		// Remove previous join records if found
 		if ((int) $row->id !== 0)

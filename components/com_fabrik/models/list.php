@@ -4834,6 +4834,20 @@ class FabrikFEModelList extends JModelForm
 	}
 
 	/**
+	 *
+	 * @since	3.1.?
+	 *
+	 * @return  bool
+	 */
+
+	public function suggestOnly()
+	{
+		$state = $this->alterExisting();
+
+		return $state == 'suggestonly';
+	}
+
+	/**
 	 * If not loaded this loads in the table's form model
 	 * also binds a reference of the table to the form.
 	 *
